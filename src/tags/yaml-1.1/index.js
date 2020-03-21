@@ -1,7 +1,9 @@
+/* global BigInt */
+
 import { Scalar } from '../../schema/Scalar'
 import { stringifyNumber } from '../../stringify'
 import { failsafe } from '../failsafe'
-import { boolOptions, nullOptions } from '../options'
+import { boolOptions, intOptions, nullOptions } from '../options'
 import { binary } from './binary'
 import { omap } from './omap'
 import { pairs } from './pairs'
@@ -13,6 +15,27 @@ const boolStringify = ({ value }) =>
 
 const intIdentify = value =>
   typeof value === 'bigint' || Number.isInteger(value)
+
+function intResolve(sign, src, radix) {
+  let str = src.replace(/_/g, '')
+  if (intOptions.asBigInt) {
+    switch (radix) {
+      case 2:
+        str = `0b${str}`
+        break
+      case 8:
+        str = `0o${str}`
+        break
+      case 16:
+        str = `0x${str}`
+        break
+    }
+    const n = BigInt(str)
+    return sign === '-' ? BigInt(-1) * n : n
+  }
+  const n = parseInt(str, radix)
+  return sign === '-' ? -1 * n : n
+}
 
 function intStringify(node, radix, prefix) {
   const { value } = node
@@ -59,8 +82,8 @@ export const yaml11 = failsafe.concat(
       default: true,
       tag: 'tag:yaml.org,2002:int',
       format: 'BIN',
-      test: /^0b([0-1_]+)$/,
-      resolve: (str, bin) => parseInt(bin.replace(/_/g, ''), 2),
+      test: /^([-+]?)0b([0-1_]+)$/,
+      resolve: (str, sign, bin) => intResolve(sign, bin, 2),
       stringify: node => intStringify(node, 2, '0b')
     },
     {
@@ -68,16 +91,16 @@ export const yaml11 = failsafe.concat(
       default: true,
       tag: 'tag:yaml.org,2002:int',
       format: 'OCT',
-      test: /^[-+]?0([0-7_]+)$/,
-      resolve: (str, oct) => parseInt(oct.replace(/_/g, ''), 8),
+      test: /^([-+]?)0([0-7_]+)$/,
+      resolve: (str, sign, oct) => intResolve(sign, oct, 8),
       stringify: node => intStringify(node, 8, '0')
     },
     {
       identify: intIdentify,
       default: true,
       tag: 'tag:yaml.org,2002:int',
-      test: /^[-+]?[0-9][0-9_]*$/,
-      resolve: str => parseInt(str.replace(/_/g, ''), 10),
+      test: /^([-+]?)([0-9][0-9_]*)$/,
+      resolve: (str, sign, abs) => intResolve(sign, abs, 10),
       stringify: stringifyNumber
     },
     {
@@ -85,8 +108,8 @@ export const yaml11 = failsafe.concat(
       default: true,
       tag: 'tag:yaml.org,2002:int',
       format: 'HEX',
-      test: /^0x([0-9a-fA-F_]+)$/,
-      resolve: (str, hex) => parseInt(hex.replace(/_/g, ''), 16),
+      test: /^([-+]?)0x([0-9a-fA-F_]+)$/,
+      resolve: (str, sign, hex) => intResolve(sign, hex, 16),
       stringify: node => intStringify(node, 16, '0x')
     },
     {

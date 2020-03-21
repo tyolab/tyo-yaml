@@ -1,10 +1,15 @@
+/* global BigInt */
+
 import { Scalar } from '../schema/Scalar'
 import { stringifyNumber } from '../stringify'
 import { failsafe } from './failsafe'
-import { boolOptions, nullOptions } from './options'
+import { boolOptions, intOptions, nullOptions } from './options'
 
 const intIdentify = value =>
   typeof value === 'bigint' || Number.isInteger(value)
+
+const intResolve = (src, part, radix) =>
+  intOptions.asBigInt ? BigInt(src) : parseInt(part, radix)
 
 function intStringify(node, radix, prefix) {
   const { value } = node
@@ -40,7 +45,8 @@ export const octObj = {
   tag: 'tag:yaml.org,2002:int',
   format: 'OCT',
   test: /^0o([0-7]+)$/,
-  resolve: (str, oct) => parseInt(oct, 8),
+  resolve: (str, oct) => intResolve(str, oct, 8),
+  options: intOptions,
   stringify: node => intStringify(node, 8, '0o')
 }
 
@@ -49,7 +55,8 @@ export const intObj = {
   default: true,
   tag: 'tag:yaml.org,2002:int',
   test: /^[-+]?[0-9]+$/,
-  resolve: str => parseInt(str, 10),
+  resolve: str => intResolve(str, str, 10),
+  options: intOptions,
   stringify: stringifyNumber
 }
 
@@ -59,7 +66,8 @@ export const hexObj = {
   tag: 'tag:yaml.org,2002:int',
   format: 'HEX',
   test: /^0x([0-9a-fA-F]+)$/,
-  resolve: (str, hex) => parseInt(hex, 16),
+  resolve: (str, hex) => intResolve(str, hex, 16),
+  options: intOptions,
   stringify: node => intStringify(node, 16, '0x')
 }
 
