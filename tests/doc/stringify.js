@@ -37,6 +37,7 @@ describe('number', () => {
   test('NaN', () => {
     expect(YAML.stringify(NaN)).toBe('.nan\n')
   })
+
   test('float with trailing zeros', () => {
     const doc = new YAML.Document()
     doc.contents = YAML.createNode(3, true)
@@ -50,8 +51,46 @@ describe('number', () => {
     doc.contents.minFractionDigits = 2
     expect(String(doc)).toBe('3e+0\n')
   })
+
+  test('integer with HEX format', () => {
+    const doc = new YAML.Document()
+    doc.contents = YAML.createNode(42, true)
+    doc.contents.format = 'HEX'
+    expect(String(doc)).toBe('0x2a\n')
+  })
+  test('float with HEX format', () => {
+    const doc = new YAML.Document()
+    doc.contents = YAML.createNode(4.2, true)
+    doc.contents.format = 'HEX'
+    expect(String(doc)).toBe('4.2\n')
+  })
+  test('negative integer with HEX format', () => {
+    const doc = new YAML.Document()
+    doc.contents = YAML.createNode(-42, true)
+    doc.contents.format = 'HEX'
+    expect(String(doc)).toBe('-42\n')
+  })
+
   test('BigInt', () => {
     expect(YAML.stringify(BigInt('-42'))).toBe('-42\n')
+  })
+  test('BigInt with HEX format', () => {
+    const doc = new YAML.Document()
+    doc.contents = YAML.createNode(BigInt('42'), true)
+    doc.contents.format = 'HEX'
+    expect(String(doc)).toBe('0x2a\n')
+  })
+  test('BigInt with OCT format', () => {
+    const doc = new YAML.Document()
+    doc.contents = YAML.createNode(BigInt('42'), true)
+    doc.contents.format = 'OCT'
+    expect(String(doc)).toBe('0o52\n')
+  })
+  test('negative BigInt with OCT format', () => {
+    const doc = new YAML.Document()
+    doc.contents = YAML.createNode(BigInt('-42'), true)
+    doc.contents.format = 'OCT'
+    expect(String(doc)).toBe('-42\n')
   })
 })
 
