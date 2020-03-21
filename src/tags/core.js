@@ -26,7 +26,7 @@ export const boolObj = {
 }
 
 export const octObj = {
-  identify: value => typeof value === 'number',
+  identify: value => typeof value === 'number' || typeof value === 'bigint',
   default: true,
   tag: 'tag:yaml.org,2002:int',
   format: 'OCT',
@@ -36,7 +36,7 @@ export const octObj = {
 }
 
 export const intObj = {
-  identify: value => typeof value === 'number',
+  identify: value => typeof value === 'number' || typeof value === 'bigint',
   default: true,
   tag: 'tag:yaml.org,2002:int',
   test: /^[-+]?[0-9]+$/,
@@ -45,7 +45,7 @@ export const intObj = {
 }
 
 export const hexObj = {
-  identify: value => typeof value === 'number',
+  identify: value => typeof value === 'number' || typeof value === 'bigint',
   default: true,
   tag: 'tag:yaml.org,2002:int',
   format: 'HEX',

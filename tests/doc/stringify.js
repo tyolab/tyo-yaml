@@ -1,3 +1,5 @@
+/* global BigInt */
+
 import { source } from 'common-tags'
 import { YAML } from '../../src/index'
 import { Pair } from '../../src/schema/Pair'
@@ -47,6 +49,9 @@ describe('number', () => {
     doc.contents.format = 'EXP'
     doc.contents.minFractionDigits = 2
     expect(String(doc)).toBe('3e+0\n')
+  })
+  test('BigInt', () => {
+    expect(YAML.stringify(BigInt('-42'))).toBe('-42\n')
   })
 })
 
