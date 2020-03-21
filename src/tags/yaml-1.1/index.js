@@ -11,6 +11,18 @@ import { intTime, floatTime, timestamp } from './timestamp'
 const boolStringify = ({ value }) =>
   value ? boolOptions.trueStr : boolOptions.falseStr
 
+const intIdentify = value =>
+  typeof value === 'bigint' || Number.isInteger(value)
+
+function intStringify(node, radix, prefix) {
+  const { value } = node
+  if (intIdentify(value)) {
+    const str = value.toString(radix)
+    return value < 0 ? '-' + prefix + str.substr(1) : prefix + str
+  }
+  return stringifyNumber(node)
+}
+
 export const yaml11 = failsafe.concat(
   [
     {
@@ -43,25 +55,25 @@ export const yaml11 = failsafe.concat(
       stringify: boolStringify
     },
     {
-      identify: value => typeof value === 'number',
+      identify: intIdentify,
       default: true,
       tag: 'tag:yaml.org,2002:int',
       format: 'BIN',
       test: /^0b([0-1_]+)$/,
       resolve: (str, bin) => parseInt(bin.replace(/_/g, ''), 2),
-      stringify: ({ value }) => '0b' + value.toString(2)
+      stringify: node => intStringify(node, 2, '0b')
     },
     {
-      identify: value => typeof value === 'number',
+      identify: intIdentify,
       default: true,
       tag: 'tag:yaml.org,2002:int',
       format: 'OCT',
       test: /^[-+]?0([0-7_]+)$/,
       resolve: (str, oct) => parseInt(oct.replace(/_/g, ''), 8),
-      stringify: ({ value }) => (value < 0 ? '-0' : '0') + value.toString(8)
+      stringify: node => intStringify(node, 8, '0')
     },
     {
-      identify: value => typeof value === 'number',
+      identify: intIdentify,
       default: true,
       tag: 'tag:yaml.org,2002:int',
       test: /^[-+]?[0-9][0-9_]*$/,
@@ -69,13 +81,13 @@ export const yaml11 = failsafe.concat(
       stringify: stringifyNumber
     },
     {
-      identify: value => typeof value === 'number',
+      identify: intIdentify,
       default: true,
       tag: 'tag:yaml.org,2002:int',
       format: 'HEX',
       test: /^0x([0-9a-fA-F_]+)$/,
       resolve: (str, hex) => parseInt(hex.replace(/_/g, ''), 16),
-      stringify: ({ value }) => (value < 0 ? '-0x' : '0x') + value.toString(16)
+      stringify: node => intStringify(node, 16, '0x')
     },
     {
       identify: value => typeof value === 'number',
